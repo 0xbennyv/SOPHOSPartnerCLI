@@ -164,9 +164,7 @@ function Create-SOPHOSPartnerTenant{
         [string]$mobile = $null,
         [Parameter(Mandatory=$true)]
         [string]$address1 = $null,
-        [Parameter(Mandatory=$true)]
         [string]$address2 = $null,
-        [Parameter(Mandatory=$true)]
         [string]$address3 = $null,
         [Parameter(Mandatory=$true)]
         [string]$city = $null,
