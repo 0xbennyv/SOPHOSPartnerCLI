@@ -26,7 +26,7 @@ This function is goig to be deleted and rolled into Export-SOPHOSPartnerTenant w
 
 ```Usage: Export-SOPHOSPartnerTenant -FileName[Optional]```
 
-### Create-SOPHOSPartnerTenant
+### New-SOPHOSPartnerTenant
 Create-SOPHOSPartnerTenant is for programatically addressing the function for additional services. As an engineer if there was a workflow that needed to be created for a batch job or some sort of processing to automatically create a new tenant. Create-SOPHOSPartnerTenant can be used.
 
 ```Usage: Create-SOPHOSPartnerTenant -CustomerName[Mandatory] -dataGeography[Mandatory] -FistName[Mandatory] -LastName[Mandatory] -Phone[Mandatory] -Mobile[Mandatory] -Address1[Mandatory] -Address2[Optional] -Address3[Optional] -City[Mandatory] -State[Mandatory] -CountryCode[Mandatory] -PostCode[Mandatory]```
