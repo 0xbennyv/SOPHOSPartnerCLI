@@ -7,7 +7,7 @@
 function Set-SOPHOSPartnerTenant{
 
     # Before the function runs check the token expiry and regenerate if needed
-    Check-SOPHOSTokenExpiry
+    Get-SOPHOSTokenExpiry
 
 	# SOPHOS Whoami URI
 	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=true"
