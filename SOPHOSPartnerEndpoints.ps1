@@ -14,7 +14,7 @@ function Get-SOPHOSPartnerEndpoints{
     )
 
     # Before the function runs check the token expiry and regenerate if needed
-    Check-SOPHOSTokenExpiry
+    Get-SOPHOSTokenExpiry
 
 	# SOPHOS Customer Tenant API URI:
 	$TenantAPIURI = $global:PartnerApiHost
@@ -59,7 +59,7 @@ function Export-SOPHOSPartnerEndpoints{
     )
 
     # Before the function runs check the token expiry and regenerate if needed
-    Check-SOPHOSTokenExpiry
+    Get-SOPHOSTokenExpiry
 
 	# SOPHOS Customer Tenant API URI:
 	$TenantAPIURI = $global:PartnerApiHost

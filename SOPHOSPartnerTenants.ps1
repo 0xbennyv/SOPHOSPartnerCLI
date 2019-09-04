@@ -44,7 +44,7 @@ function Export-SOPHOSPartnerTenants{
     )
         
     # Before the function runs check the token expiry and regenerate if needed
-    Check-SOPHOSTokenExpiry
+    Get-SOPHOSTokenExpiry
 	
     # SOPHOS Whoami URI:
 	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=true"
@@ -96,7 +96,7 @@ function Export-SOPHOSPartnerTenantsRedacted{
     )
 	
     # Before the function runs check the token expiry and regenerate if needed
-    Check-SOPHOSTokenExpiry
+    Get-SOPHOSTokenExpiry
 
     # SOPHOS Whoami URI
 	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=true"
@@ -145,7 +145,7 @@ function Export-SOPHOSPartnerTenantsRedacted{
 }
 
 
-function Create-SOPHOSPartnerTenant{
+function New-SOPHOSPartnerTenant{
    
     # Set SysArgs for PureCLI Expirience
     param (
@@ -178,7 +178,7 @@ function Create-SOPHOSPartnerTenant{
     )
 	
     # Before the function runs check the token expiry and regenerate if needed
-    Check-SOPHOSTokenExpiry
+    Get-SOPHOSTokenExpiry
 
     # SOPHOS Tenant URI
 	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants"
@@ -287,7 +287,7 @@ function Import-SOPHOSPartnerTenant{
     )
 	
     # Before the function runs check the token expiry and regenerate if needed
-    Check-SOPHOSTokenExpiry
+    Get-SOPHOSTokenExpiry
 
     # SOPHOS Tenant URI
 	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants"

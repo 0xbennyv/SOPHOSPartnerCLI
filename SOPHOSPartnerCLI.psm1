@@ -6,13 +6,13 @@
 Export-ModuleMember Set-SOPHOSCredentials
 Export-ModuleMember Get-SOPHOSPartnerID
 Export-ModuleMember Get-SOPHOSToken
-Export-ModuleMember Check-SOPHOSTokenExpiry
+Export-ModuleMember Get-SOPHOSTokenExpiry
 
 # SOPHOSPartnerTenants.ps1
 Export-ModuleMember Export-SOPHOSPartnerTenantsRedacted
 Export-ModuleMember Export-SOPHOSPartnerTenants
 Export-ModuleMember Set-SOPHOSPartnerTenant
-Export-ModuleMember Create-SOPHOSPartnerTenant
+Export-ModuleMember New-SOPHOSPartnerTenant
 Export-ModuleMember Get-SOPHOSTenantTemplate
 Export-ModuleMember Import-SOPHOSPartnerTenant
 
