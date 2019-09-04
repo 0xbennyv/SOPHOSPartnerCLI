@@ -3,7 +3,9 @@ This is a SOPHOS Central PowerShell Module for Partners.
 
 # Getting Started
 
-ToDo: Add Notes for importing the module once functional
+In the current iteration of the scripts, the way to get started is:
+
+```Import-Module .\SOPHOSPartnerCLI.psm1```
 
 Once Imported, running Set-SOPHOSCredentials will prompt for ClientID and ClientSecret. This will store the credentials in "sophos_partner_config.json" and will automatically trigger Get-SOPHOSToken and Get-SOPHOSPartnerID.
 
