@@ -9,18 +9,18 @@
 function Get-SOPHOSToken{
 
     # See if Config file has been setup, if it doesn't exists then run the Set-SOPHOSCredentials Function
-    if ((Test-Path "sophos_partner_config.json") -eq $false){
+    if ((Test-Path $env:userprofile\sophos_partner_config.json) -eq $false){
         Set-SOPHOSCredentials
         }
     
     # Read JSON Config File
-    $credentials = Get-Content sophos_partner_config.json | ConvertFrom-Json
+    $credentials = Get-Content $env:userprofile\sophos_partner_config.json | ConvertFrom-Json
     $clientId = $credentials[0]
     $clientSecret = $credentials[1] | ConvertTo-SecureString
 
     # Create PSCredential Object for Credentials
     $SecureCredentials = New-Object System.Management.Automation.PSCredential -ArgumentList $clientId , $clientSecret
-
+    
 	# SOPHOS OAuth URL
 	$TokenURI = "https://id.sophos.com/api/v2/oauth2/token"
 	
@@ -86,7 +86,7 @@ function Set-SOPHOSCredentials{
     $clientSecret = Read-Host "Please Enter your Client Secret" -AsSecureString | ConvertFrom-SecureString
 
     # Out to JSON Config File
-    ConvertTo-Json $ClientID, $ClientSecret | Out-File sophos_partner_config.json -Force
+    ConvertTo-Json $ClientID, $ClientSecret | Out-File $env:userprofile\sophos_partner_config.json -Force
 
     # Run the Get-SOPHOSToken Function to get the API Key
     Get-SOPHOSToken
