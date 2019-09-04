@@ -1,8 +1,8 @@
 ﻿<#
     Author: Ben Verschaeren
     Description: This function to obtain OAuth2 Token from SOPHOS API Gateway for Partners and obtains the PartnerID and Gateway
-    Note: This is not officially supported by SOPHOS. If you've got a problem If you're a junior engineer
-    learn python, love FOSS, make love not war.
+    Note: This is not officially supported by SOPHOS. If you've got a problem log an issue on the repo https://github.com/0xbennyv/SOPHOSPartnerCLI 
+    If you're a junior engineer learn python, love FOSS, make love not war.
 #>
 
 
