@@ -96,7 +96,7 @@ function Set-SOPHOSCredentials{
 
 function Get-SOPHOSTokenExpiry{
     # Compare the TokenExpiry Date to Now and re-generate if needed
-    if ((Get-Date) -ge ($global:TokenExpiry)){
+    if ((Get-Date) -ge ($Global:TokenExpiration)){
         Get-SOPHOSToken
     }
 }

@@ -146,79 +146,49 @@ function Export-SOPHOSPartnerTenantsRedacted{
 
 
 function New-SOPHOSPartnerTenant{
-   
-    # Set SysArgs for PureCLI Expirience
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$CustomerName = $null,
-        [string]$dataGeography = 'US',
-        [Parameter(Mandatory=$true)]
-        [string]$firstName = $null,
-        [Parameter(Mandatory=$true)]
-        [string]$lastName = $null,
-        [Parameter(Mandatory=$true)]
-        [string]$email = $null,
-        [Parameter(Mandatory=$true)]
-        [string]$phone = $null,
-        [Parameter(Mandatory=$true)]
-        [string]$mobile = $null,
-        [Parameter(Mandatory=$true)]
-        [string]$address1 = $null,
-        [string]$address2 = $null,
-        [string]$address3 = $null,
-        [Parameter(Mandatory=$true)]
-        [string]$city = $null,
-        [Parameter(Mandatory=$true)]
-        [string]$state = $null,
-        [Parameter(Mandatory=$true)]
-        [string]$countryCode = $null,
-        [Parameter(Mandatory=$true)]
-        [string]$postCode = $null
-
-    )
 	
     # Before the function runs check the token expiry and regenerate if needed
     Get-SOPHOSTokenExpiry
 
     # SOPHOS Tenant URI
-	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants"
+	$URI = "https://api.central.sophos.com/partner/v1/tenants"
 	
     # RequestBody for Tenant Creation
-    $TokenRequestBody = @{
-        "name" = $customerName;
-        "dataGeography" = $dataGeography;
-        "contact" = @{
-            "firstName" = $firstName;
-            "lastName" = $lastName;
-            "email" = $email;
-            "phone" = $phone;
-            "mobile" = $mobile;
-            "address" = @{
-                "address1" = $address1;
-                "address2" = $address2;
-                "address3" = $address3;
-                "city" = $city;
-                "state" = $state;
-                "countryCode" = $countrycode;
-                "postCode" = $postCode;
+    $Body = [ordered]@{
+    "name" = "Customer Name 2";
+    "dataGeography" = "US";
+    "contact" = [ordered]@{
+            "firstName" = "First";
+            "lastName" = "Last";
+            "email" = "ben@bennyv.com";
+            "phone" = "123456789";
+            "mobile" = "987654321";
+            "fax" = "24681012";
+            "address" = [ordered]@{
+                "address1" = "Line1";
+                "address2" = "Line2";
+                "address3" = "Line3";
+                "city" = "Melbourne";
+                "state" = "Victoria";
+                "countryCode" = "AU";
+                "postalCode" = "3072";
                 }
             }
         "billingType" = "trial";
-        }
-    $TokenRequestHeaders = @{
-        "content-type" = "application/x-www-form-urlencoded";
-    }
+        } 
+
     # Request Headers
-    $PartnerTenantHeaders = @{
-        "Authorization" = "Bearer $global:Token";
+    $Headers = [ordered]@{
+        "Authorization" = "Bearer $global:token";
         "X-Partner-ID" = "$global:ApiPartnerId";
+
     }
-	
+
     # Set TLS Version
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-	# Post Request to SOPHOS for Whoami Details:
-	# $PartnerTenantResult = (Invoke-RestMethod -Method Post -Uri $PartnerTenantURI -Body $TenantRequestBody -Headers $TenantRequestHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
+    # Post Request to SOPHOS Details:
+	$PartnerTenantResult = (Invoke-RestMethod -ContentType "Application/Json" -Method Post -Uri $URI -Headers ($Header | ConvertTo-Json) -Body $Body -ErrorAction SilentlyContinue -ErrorVariable Error)
 
 }
 
@@ -290,7 +260,7 @@ function Import-SOPHOSPartnerTenant{
     Get-SOPHOSTokenExpiry
 
     # SOPHOS Tenant URI
-	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants"
+	$URI = "https://api.central.sophos.com/partner/v1/tenants"
 	
     # If not invoked from the commandline to save prompt for a saveas dialog
     if ($FileName -eq "") {
@@ -346,7 +316,7 @@ function Import-SOPHOSPartnerTenant{
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         
         # Post Request
-        # $PartnerTenantResult = (Invoke-RestMethod -Method Post -Uri $PartnerTenantURI -Body $TenantRequestBody -Headers $TenantRequestHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
+        $PartnerTenantResult = (Invoke-RestMethod -Method Post -Uri $PartnerTenantURI -Body $TenantRequestBody -Headers $TenantRequestHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
 
         # Notify SysAdmin
         Write-Host "Sucessfully created tennant for: $($TenantRequestBody.name)"
