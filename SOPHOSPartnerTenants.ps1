@@ -40,17 +40,18 @@ function Export-SOPHOSPartnerTenants{
         
     # Set SysArgs for PureCLI Expirience
     param (
-        [string]$FileName = ""
+        [string]$FileName = "",
+        [switch]$Redacted = $false
     )
         
     # Before the function runs check the token expiry and regenerate if needed
     Get-SOPHOSTokenExpiry
 	
     # SOPHOS Whoami URI:
-	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=true"
+	$Uri = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=true"
 	
     # SOPHOS Whoami Headers
-    $PartnerTenantHeaders = @{
+    $Headers = @{
         "Authorization" = "Bearer $global:Token";
         "X-Partner-ID" = "$global:ApiPartnerId";
     }
@@ -59,8 +60,15 @@ function Export-SOPHOSPartnerTenants{
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 	# Post Request to SOPHOS for Whoami Details
-	$PartnerTenantResult = (Invoke-RestMethod -Method Get -Uri $PartnerTenantURI -Headers $PartnerTenantHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
+	$Result = (Invoke-RestMethod -Method Get -Uri $Uri -Headers $Headers -ErrorAction SilentlyContinue -ErrorVariable Error)
     
+    # Redact Information if needed
+    if ($Redacted -eq $true){
+        $TenantDetails = $Result.items | Select -Property name, billingType, dataRegion, dataGeography
+    }else{
+        $TenantDetails = $Result.items
+    }
+   
     # If not invoked from the commandline to save prompt for a saveas dialog:
     if ($FileName -eq "") {
 
@@ -72,7 +80,7 @@ function Export-SOPHOSPartnerTenants{
         if($dlg.ShowDialog() -eq 'Ok'){
 
             # Export list as CSV using the file name chosen in dialog
-            $PartnerTenantResult.items | Export-Csv -Path $dlg.filename -NoTypeInformation
+            $TenantDetails | Export-Csv -Path $dlg.filename -NoTypeInformation
 
             # Confirmation of saving:
             Write-host "Tenant list exported as CSV to: $($dlg.filename)"
@@ -80,107 +88,85 @@ function Export-SOPHOSPartnerTenants{
 
     # If Filename is Set then export as per the norm
     }else{
-
-        $PartnerTenantResult.items | Export-Csv -Path $FileName -NoTypeInformation
-        Write-host "Tenant list exported as CSV to: $FileName"
+            $TenantDetails | Export-Csv -Path $FileName -NoTypeInformation
+            Write-host "Tenant list exported as CSV to: $FileName"
+            
     }
-
-}
-
-
-function Export-SOPHOSPartnerTenantsRedacted{
-   
-    # Set SysArgs for PureCLI Expirience
-    param (
-        [string]$FileName = ""
-    )
-	
-    # Before the function runs check the token expiry and regenerate if needed
-    Get-SOPHOSTokenExpiry
-
-    # SOPHOS Whoami URI
-	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=true"
-	
-    # SOPHOS Whoami Headers
-    $PartnerTenantHeaders = @{
-        "Authorization" = "Bearer $global:Token";
-        "X-Partner-ID" = "$global:ApiPartnerId";
-    }
-	
-    # Set TLS Version
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-	# Post Request to SOPHOS for Whoami Details:
-	$PartnerTenantResult = (Invoke-RestMethod -Method Get -Uri $PartnerTenantURI -Headers $PartnerTenantHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
-    
-    # Confirmation Message
-    $confirmationMsg = 'Tenant list exported as CSV to:'
-
-    # If not invoked from the commandline to save prompt for a saveas dialog
-    if ($FileName -eq "") {
-
-        # Create a dialogbox for saveas (Thanks StackOverflow)
-        Add-Type -AssemblyName System.Windows.Forms
-        $dlg=New-Object System.Windows.Forms.SaveFileDialog
-        
-        # If save is clicked then do it
-        if($dlg.ShowDialog() -eq 'Ok'){
-
-            # Export list as CSV using the file name chosen in dialog
-            $PartnerTenantResult.items | Select -Property name, billingType, dataRegion, dataGeography  | 
-            Export-Csv -Path $dlg.filename -NoTypeInformation
-
-            # Confirmation of saving:
-            Write-host "$($confirmationMsg) $($dlg.filename)"
-        };
-
-    # If Filename is Set then export as per the norm
-    }else{
-
-        $PartnerTenantResult.items | Select -Property name, billingType, dataRegion, dataGeography | 
-        Export-Csv -Path $FileName -NoTypeInformation
-        Write-host "$($confirmationMsg) $($FileName)"
-    }
-
 }
 
 
 function New-SOPHOSPartnerTenant{
-	
+	param (
+     [Parameter(Mandatory=$true)]
+     [string]$customerName = $null,
+     [ValidateSet(“US”,”IE”,”DE”)] 
+     [string]$dataGeography = 'US',
+     [Parameter(Mandatory=$true)]
+     [string]$firstName = $null,
+     [Parameter(Mandatory=$true)]
+     [string]$lastName = $null,
+     [Parameter(Mandatory=$true)]
+     [string]$email = $null,
+     [Parameter(Mandatory=$true)]
+     [string]$phone = $null,
+     [Parameter(Mandatory=$true)]
+     [string]$mobile = $null,
+     [Parameter(Mandatory=$true)]
+     [string]$address1 = $null,
+     [Parameter(Mandatory=$true)]
+     [string]$address2 = $null,
+     [Parameter(Mandatory=$true)]
+     [string]$address3 = $null,
+     [Parameter(Mandatory=$true)]
+     [string]$city = $null,
+     [Parameter(Mandatory=$true)]
+     [string]$state = $null,
+     [Parameter(Mandatory=$true)]
+     [string]$countryCode = $null,
+     [Parameter(Mandatory=$true)]
+     [string]$postCode = $null,
+     [switch]$active = $false
+
+)
     # Before the function runs check the token expiry and regenerate if needed
     Get-SOPHOSTokenExpiry
 
     # SOPHOS Tenant URI
-	$URI = "https://api.central.sophos.com/partner/v1/tenants"
+	$Uri = "https://api.central.sophos.com/partner/v1/tenants"
 	
     # RequestBody for Tenant Creation
-    $Body = [ordered]@{
-    "name" = "Customer Name 2";
-    "dataGeography" = "US";
-    "contact" = [ordered]@{
-            "firstName" = "First";
-            "lastName" = "Last";
-            "email" = "ben@bennyv.com";
-            "phone" = "123456789";
-            "mobile" = "987654321";
-            "fax" = "24681012";
-            "address" = [ordered]@{
-                "address1" = "Line1";
-                "address2" = "Line2";
-                "address3" = "Line3";
-                "city" = "Melbourne";
-                "state" = "Victoria";
-                "countryCode" = "AU";
-                "postalCode" = "3072";
-                }
-            }
-        "billingType" = "trial";
-        } 
+    # You may ask, why not use ConvertTo-JSON, great question. Powershell adds whitespace that just gets nasty and errs out of life
+    # Also, not prompting for Fax because it's 2019 and it shouldn't be a mandatory field.
+    $Body = "{
+    ""name"": ""$customerName"",
+    ""dataGeography"": ""US"",
+    ""contact"": {
+        ""firstName"": ""$firstName"",
+        ""lastName"": ""$lastName"",
+        ""email"": ""$email"",
+        ""phone"": ""$phone"",
+        ""mobile"": ""$mobile"",
+        ""fax"": ""00001111"",
+        ""address"": {
+            ""address1"": ""$address1"",
+            ""address2"": ""$address2"",
+            ""address3"": ""$address3"",
+            ""city"": ""$city"",
+            ""state"": ""$state"",
+            ""countryCode"": ""$countryCode"",
+            ""postalCode"": ""$postCode""
+        }
+    },
+    ""billingType"": ""trial""
+    }"
+
 
     # Request Headers
     $Headers = [ordered]@{
         "Authorization" = "Bearer $global:token";
         "X-Partner-ID" = "$global:ApiPartnerId";
+        "Content-Type" = "application/json";
+        "cache-control" = "no-cache";
 
     }
 
@@ -188,7 +174,18 @@ function New-SOPHOSPartnerTenant{
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
     # Post Request to SOPHOS Details:
-	$PartnerTenantResult = (Invoke-RestMethod -ContentType "Application/Json" -Method Post -Uri $URI -Headers ($Header | ConvertTo-Json) -Body $Body -ErrorAction SilentlyContinue -ErrorVariable Error)
+	$Result = (Invoke-RestMethod -Uri $Uri -Method Post -ContentType "application/json" -Headers $Headers -Body $Body -ErrorAction SilentlyContinue -ErrorVariable Error)
+
+    # Notify SysAdmin
+    Write-Host "Sucessfully created tennant for: $($Result.name)"
+    
+    # If the active flag is set then set it
+    if ($active -eq $true){
+        $global:PartnerId = $Result.id
+        $global:PartnerApiHost = $Result.apiHost
+        $global:PartnerName = $Result.name
+        Write-Host("$global:PartnerName is now active")
+    }
 
 }
 
@@ -201,7 +198,7 @@ function Get-SOPHOSTenantTemplate{
     )
 
     #$template.items | Select -Property 'Customer Name'  | ConvertTo-Csv | Export-Csv -Path test.csv -notypeinformation
-    $csvTemplate = @{CustomerName = 'Aiblockchain Cloud';
+    $csvTemplate = [ordered]@{CustomerName = 'Aiblockchain Cloud';
                      DataGeography = 'US/IE/DE';
                      FirstName = 'Kate';
                      LastName = 'Libby';
@@ -218,9 +215,8 @@ function Get-SOPHOSTenantTemplate{
                      PostCode = '1337';}
 
     # Export list as CSV using the file name chosen in dialog
-    $template = New-Object PSObject -Property $csvTemplate | 
-                Select CustomerName, DataRegion, FirstName, LastName, Email, Phone, Mobile, Fax, Address1, Address2, Address3, City, State, CountryCode, PostCode
-    
+    $template = New-Object PSObject -Property $csvTemplate
+
     $confirmationMsg = 'CSV Template has been exported too:'
 
     # If not invoked from the commandline to save prompt for a saveas dialog
