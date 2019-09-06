@@ -244,6 +244,7 @@ function Get-SOPHOSTenantTemplate{
     }
 }
 
+
 function Import-SOPHOSPartnerTenant{
    
     # Set SysArgs for PureCLI Expirience
@@ -256,7 +257,7 @@ function Import-SOPHOSPartnerTenant{
     Get-SOPHOSTokenExpiry
 
     # SOPHOS Tenant URI
-	$URI = "https://api.central.sophos.com/partner/v1/tenants"
+	$Uri = "https://api.central.sophos.com/partner/v1/tenants"
 	
     # If not invoked from the commandline to save prompt for a saveas dialog
     if ($FileName -eq "") {
@@ -278,44 +279,63 @@ function Import-SOPHOSPartnerTenant{
     Import-CSV -Path $FileName | 
     ForEach-Object {
         # RequestBody for Tenant Creation
-        $TenantRequestBody = @{
-            "name" = $_.CustomerName;
-            "dataGeography" = $_.dataGeography;
-            "contact" = @{
-                "firstName" = $_.FirstName;
-                "lastName" = $_.FastName;
-                "email" = $_.Email;
-                "phone" = $_.Phone;
-                "mobile" = $_.Mobile;
-                "address" = @{
-                    "address1" = $_.Address1;
-                    "address2" = $_.Address2;
-                    "address3" = $_.Address3;
-                    "city" = $_.City;
-                    "state" = $_.State;
-                    "countryCode" = $_.CountryCode;
-                    "postCode" = $_.PostCode;
-                    }
-                }
-            "billingType" = "trial";
-            }
+        # Quick and Dirty to be tidied, escaping the $_. isn't working.
+        $customerName = $_.CustomerName
+        $dataGeography = $_.dataGeography
+        $firstName = $_.FirstName
+        $lastName = $_.LastName
+        $email = $_.Email
+        $phone = $_.Phone
+        $mobile = $_.Mobile
+        $fax = $_.Fax
+        $address1 = $_.Address1
+        $address2 = $_.Address2
+        $address3 = $_.Address3
+        $city = $_.City
+        $state = $_.State
+        $countryCode = $_.CountryCode
+        $postCode = $_.PostCode
 
+        $Body = "{
+        ""name"": ""$customerName"",
+        ""dataGeography"": ""$dataGeography"",
+        ""contact"": {
+            ""firstName"": ""$firstName"",
+            ""lastName"": ""$lastName"",
+            ""email"": ""$email"",
+            ""phone"": ""$phone"",
+            ""mobile"": ""$mobile"",
+            ""fax"": ""$fax"",
+            ""address"": {
+                ""address1"": ""$address1"",
+                ""address2"": ""$address2"",
+                ""address3"": ""$address3"",
+                ""city"": ""$city"",
+                ""state"": ""$state"",
+                ""countryCode"": ""$countryCode"",
+                ""postalCode"": ""$postCode""
+            }
+        },
+        ""billingType"": ""trial""
+        }"
 
         # Request Headers
-        $PartnerTenantHeaders = @{
-            "Authorization" = "Bearer $global:Token";
-            "X-Partner-ID" = "$global:ApiPartnerId";
+        $Headers = [ordered]@{
+        "Authorization" = "Bearer $global:token";
+        "X-Partner-ID" = "$global:ApiPartnerId";
+        "Content-Type" = "application/json";
+        "cache-control" = "no-cache";
         }
 
-
+        Write-Host $Body
         # Set TLS Version
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         
         # Post Request
-        $PartnerTenantResult = (Invoke-RestMethod -Method Post -Uri $PartnerTenantURI -Body $TenantRequestBody -Headers $TenantRequestHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
+        $Result = (Invoke-RestMethod -Uri $Uri -Method Post -ContentType "application/json" -Headers $Headers -Body $Body -ErrorAction SilentlyContinue -ErrorVariable Error)
 
         # Notify SysAdmin
-        Write-Host "Sucessfully created tennant for: $($TenantRequestBody.name)"
+        Write-Host "Sucessfully created tennant for: $($Result.name)"
     }
 
 }
