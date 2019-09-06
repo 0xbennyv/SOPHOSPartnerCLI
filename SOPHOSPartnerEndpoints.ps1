@@ -1,6 +1,6 @@
 <#
     Author: Ben Verschaeren
-    Description: Manage Parnter Tenants
+    Description: Manage Parnter Endppints
 #>
 
 
