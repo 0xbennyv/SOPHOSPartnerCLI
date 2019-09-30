@@ -1,6 +1,7 @@
 . .\SOPHOSAPI.ps1
 . .\SOPHOSPartnerTenants.ps1
 . .\SOPHOSPartnerEndpoints.ps1
+. .\SOPHOSPartnerStatus.ps1
 
 # SOPHOSAPI.ps1
 Export-ModuleMember Set-SOPHOSCredentials
@@ -19,3 +20,9 @@ Export-ModuleMember Import-SOPHOSPartnerTenant
 # SOPHOSPartnerEndpoints
 Export-ModuleMember Get-SOPHOSPartnerEndpoint
 Export-ModuleMember Export-SOPHOSPartnerEndpoints
+
+# SOPHOSPartnerStatus
+Export-ModuleMember Get-SOPHOSPartnerAllEndpoints
+Export-ModuleMember Get-SOPHOSPartnerRedStatus
+Export-ModuleMember Get-Get-SOPHOSPartnerWarnedStatus
+Export-ModuleMember Get-SOPHOSPartnerHealthyStatus

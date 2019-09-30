@@ -35,6 +35,32 @@ function Set-SOPHOSPartnerTenant{
 
 }
 
+function Get-SOPHOSPartnerTenants{
+
+    # Before the function runs check the token expiry and regenerate if needed
+    Get-SOPHOSTokenExpiry
+
+	# SOPHOS Whoami URI
+	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=true"
+	
+    # SOPHOS Whoami Headers
+    $PartnerTenantHeaders = @{
+        "Authorization" = "Bearer $global:Token";
+        "X-Partner-ID" = "$global:ApiPartnerId";
+    }
+	
+    # Set TLS Version
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+	# Post Request to SOPHOS for Whoami Details
+	$PartnerTenantResult = (Invoke-RestMethod -Method Get -Uri $PartnerTenantURI -Headers $PartnerTenantHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
+    
+    # Display List of Partners, gridview with passthough makes it selectable.
+    $global:PartnerTenants = $PartnerTenantResult.items | Select -Property id, name, apiHost
+
+
+}
+
 
 function Export-SOPHOSPartnerTenants{
         

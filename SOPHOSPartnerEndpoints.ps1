@@ -5,45 +5,53 @@
 
 
 function Get-SOPHOSPartnerEndpoints{
-    
+
     param (
-        [string]$ComputerType = $null,
-        [string]$Health = $null,
-        [string]$User = $null,
-        [string]$HostName = $null
+        [ValidateSet(“good”,”suspicious”,”bad”)]
+        [string]$OverallHealth = $null,
+        [string]$HostName = $null,
+        [ValidateSet(“JSON”,”CSV”)]
+        [string]$Export = "JSON"
     )
 
     # Before the function runs check the token expiry and regenerate if needed
     Get-SOPHOSTokenExpiry
+	
+    # Get the latest list of partners with the ID, API Host and Name
+    Get-SOPHOSPartnerTenants
 
-	# SOPHOS Customer Tenant API URI:
-	$TenantAPIURI = $global:PartnerApiHost
-	
-    # SOPHOS Customer Tenant API Headers:
-    $TentantAPIHeaders = @{
-        "Authorization" = "Bearer $global:Token";
-        "X-Tenant-ID" = "$global:PartnerId";
-    }
-	
     # Set TLS Version
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-	# Post Request to SOPHOS for Endpoint API:
-	$TenantEndpointResult = (Invoke-RestMethod -Method Get -Uri $TenantAPIURI"/endpoint/v1/endpoints" -Headers $TentantAPIHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
+
+	
+    foreach ($tenant in $global:PartnerTenants) {
+        
+        $apihost = $tenant.apiHost
+        $tenantid = $tenant.id
+
+        # SOPHOS Customer Tenant API Headers:
+        $TentantAPIHeaders = @{
+            "Authorization" = "Bearer $global:Token";
+            "X-Tenant-ID" = "$tenantid";
+        }
+
+	    # Post Request to SOPHOS for Endpoint API:
+	    $TenantEndpointResult = (Invoke-RestMethod -Method Get -Uri $apiHost"/endpoint/v1/endpoints" -Headers $TentantAPIHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
     
-    # All results for debugging
-    #Write-Host($TenantEndpointResult.items | Out-GridView)
+        # All results for debugging
+        # Write-Host($TenantEndpointResult.items | Out-GridView)
 
-    # Build the query, Output of Assigned Products needs cleaning
-    $TenantEndpoints = $TenantEndpointResult.items | 
-    ? { (!$ComputerType) -or ($_.type -eq $ComputerType)} |  
-    ? { (!$HostName) -or ($_.hostname -match $HostName)} |
-    ? { (!$Health) -or ($_.Health.overall -eq $Health)} |
-    ? { (!$User) -or ($_.associatedPerson.viaLogin -match $user)} |
-    Select -Property type, hostname, {$_.health.overall}, {$_.health.threats.status}, {$_.health.services.status}, 
-    {$_.os.platform}, {$_.os.name}, {$_.associatedPerson.viaLogin}, {$_.assignedProducts} | 
-    Out-GridView -PassThru
+        # Build the query, Output of Assigned Products needs cleaning
+        $TenantEndpoints = $TenantEndpointResult.items | 
+        ? { (!$HostName) -or ($_.hostname -match $HostName)} |
+        ? { (!$OverallHealth) -or ($_.Health.overall -eq $OverallHealth)} |
+        Select -Property type, hostname, {$_.health.overall}, {$_.health.threats.status}, {$_.health.services.status}, 
+        {$_.os.platform}, {$_.os.name}, {$_.associatedPerson.viaLogin}, {$_.assignedProducts} |
+        ConvertTo-Json
 
+        Write-Host($TenantEndpoints)
+    }
 }
 
 
