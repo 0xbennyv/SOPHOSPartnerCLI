@@ -24,5 +24,5 @@ Export-ModuleMember Export-SOPHOSPartnerEndpoints
 # SOPHOSPartnerStatus
 Export-ModuleMember Get-SOPHOSPartnerAllEndpoints
 Export-ModuleMember Get-SOPHOSPartnerRedStatus
-Export-ModuleMember Get-Get-SOPHOSPartnerWarnedStatus
+Export-ModuleMember Get-SOPHOSPartnerWarnedStatus
 Export-ModuleMember Get-SOPHOSPartnerHealthyStatus
