@@ -49,8 +49,9 @@ function Get-SOPHOSPartnerEndpoints{
         Select -Property type, hostname, {$_.health.overall}, {$_.health.threats.status}, {$_.health.services.status}, 
         {$_.os.platform}, {$_.os.name}, {$_.associatedPerson.viaLogin}, {$_.assignedProducts} |
         ConvertTo-Json
-
-        Write-Host($TenantEndpoints)
+        if ($TenantEndpoints){
+            Write-Host($TenantEndpoints)
+        }
     }
 }
 
