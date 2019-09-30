@@ -36,7 +36,16 @@ Import-SOPHOSPartnerTenant is designed for Bulk Importation of customers to crea
 ```Usage: Import-SOPHOSPartnerTenant -FileName[Optional]```
 
 ## Endpoint Commands
-### Get-SOPHOSPartnerEndpoints
+### Get-SOPHOSPartnerAllEndpoints
+Dumps a list of every tenants endpoints
 
-### Export-SOPHOSPartnerEndpoints
+### Get-SOPHOSPartnerRedStatus
+Returns any endpoint with a health status of "bad"
+
+### Get-SOPHOSPartnerWarnedStatus
+Returns any endpoint with a health status of "suspicous"
+
+### Get-SOPHOSPartnerHealthyStatus
+Returns any endpoint with a health status of "good"
+
 
