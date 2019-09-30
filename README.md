@@ -1,5 +1,8 @@
 # SOPHOSPartnerCLI
-This is a SOPHOS Central PowerShell Module for Partners.
+This is a SOPHOS Central PowerShell Module for SOPHOS Partners. It's still pretty beta and raw however you have a choice:
+
+RedPill) Contribute and share information and see how deep the rabbit hole goes.
+BluePill) Fork it, clone it use what I've done as a foundation and the story ends here.
 
 # Getting Started
 
