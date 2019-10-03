@@ -3,29 +3,37 @@
     Description: Manage Parnter Tenants
 #>
 
-
+# Function is used to manually set a tenant for indevidual alert managment
 function Set-SOPHOSPartnerTenant{
 
     # Before the function runs check the token expiry and regenerate if needed
     Get-SOPHOSTokenExpiry
 
 	# SOPHOS Whoami URI
-	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=true"
+	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=True"
 	
     # SOPHOS Whoami Headers
     $PartnerTenantHeaders = @{
         "Authorization" = "Bearer $global:Token";
         "X-Partner-ID" = "$global:ApiPartnerId";
     }
-	
+
     # Set TLS Version
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-	# Post Request to SOPHOS for Whoami Details
+	# Post Request to SOPHOS Endpoint Gateway, This request is just used to get the pages (waste of a request I know)
 	$PartnerTenantResult = (Invoke-RestMethod -Method Get -Uri $PartnerTenantURI -Headers $PartnerTenantHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
     
+    # Check them all into this collection
+    $AllPartnerTenantResults = @()
+    
+    For ($i=1; $i -le $PartnerTenantResult.pages.total; $i++) {
+        $PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=True&page=$i"
+        $AllPartnerTenantResults += (Invoke-RestMethod -Method Get -Uri $PartnerTenantURI -Headers $PartnerTenantHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
+    }
+
     # Display List of Partners, gridview with passthough makes it selectable.
-    $SelectedPartner = $PartnerTenantResult.items | Out-GridView -PassThru
+    $SelectedPartner = $AllPartnerTenantResults.items | Out-GridView -PassThru
 
     # We need the Token, TennantID and APIHost
     $global:PartnerId = $SelectedPartner.id
@@ -35,33 +43,42 @@ function Set-SOPHOSPartnerTenant{
 
 }
 
+
+# Designed to be invoked for other functions to get "All" tenant/endpoint data
 function Get-SOPHOSPartnerTenants{
 
     # Before the function runs check the token expiry and regenerate if needed
     Get-SOPHOSTokenExpiry
 
 	# SOPHOS Whoami URI
-	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=true"
+	$PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=True"
 	
     # SOPHOS Whoami Headers
     $PartnerTenantHeaders = @{
         "Authorization" = "Bearer $global:Token";
         "X-Partner-ID" = "$global:ApiPartnerId";
     }
-	
+
     # Set TLS Version
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-	# Post Request to SOPHOS for Whoami Details
+	# Post Request to SOPHOS Endpoint Gateway, This request is just used to get the pages (waste of a request I know)
 	$PartnerTenantResult = (Invoke-RestMethod -Method Get -Uri $PartnerTenantURI -Headers $PartnerTenantHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
     
-    # Display List of Partners, gridview with passthough makes it selectable.
-    $global:PartnerTenants = $PartnerTenantResult.items | Select -Property id, name, apiHost
+    # Check them all into this collection
+    $AllPartnerTenantResults = @()
+    
+    For ($i=1; $i -le $PartnerTenantResult.pages.total; $i++) {
+        $PartnerTenantURI = "https://api.central.sophos.com/partner/v1/tenants?pageTotal=True&page=$i"
+        $AllPartnerTenantResults += (Invoke-RestMethod -Method Get -Uri $PartnerTenantURI -Headers $PartnerTenantHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
+    }
 
+    $global:PartnerTenants = $AllPartnerTenantResults | Select -Property id, apihost, name
 
 }
 
 
+# Export out each tenant, need to add page support
 function Export-SOPHOSPartnerTenants{
         
     # Set SysArgs for PureCLI Expirience
@@ -120,8 +137,9 @@ function Export-SOPHOSPartnerTenants{
     }
 }
 
-
+# Used to create a new tenant
 function New-SOPHOSPartnerTenant{
+
 	param (
      [Parameter(Mandatory=$true)]
      [string]$customerName = $null,
@@ -216,6 +234,7 @@ function New-SOPHOSPartnerTenant{
 }
 
 
+# Get a template for importation
 function Get-SOPHOSTenantTemplate{
 
     # Set SysArgs for PureCLI Expirience
@@ -271,6 +290,7 @@ function Get-SOPHOSTenantTemplate{
 }
 
 
+# Import the CSV File
 function Import-SOPHOSPartnerTenant{
    
     # Set SysArgs for PureCLI Expirience

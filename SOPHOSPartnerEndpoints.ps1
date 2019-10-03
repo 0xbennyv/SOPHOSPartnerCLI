@@ -4,8 +4,7 @@
 #>
 
 
-function Get-SOPHOSPartnerEndpoints{
-
+function Get-SOPHOSPartnerEndpointsAllTenants{
     param (
         [ValidateSet(“good”,”suspicious”,”bad”)]
         [string]$OverallHealth = $null,
@@ -49,11 +48,110 @@ function Get-SOPHOSPartnerEndpoints{
         Select -Property type, hostname, {$_.health.overall}, {$_.health.threats.status}, {$_.health.services.status}, 
         {$_.os.platform}, {$_.os.name}, {$_.associatedPerson.viaLogin}, {$_.assignedProducts} |
         ConvertTo-Json
+
         if ($TenantEndpoints){
             Write-Host($TenantEndpoints)
         }
     }
 }
+
+
+# Get the selected tenants endpoints
+function Get-SOPHOSPartnerEndpoints{
+    
+    # Function Params
+    param (
+        [string]$ComputerType = $null,
+        [string]$Health = $null,
+        [string]$User = $null,
+        [string]$HostName = $null
+    )
+
+    # Before the function runs check the token expiry and regenerate if needed
+    Get-SOPHOSTokenExpiry
+
+    # Check to See if tenant is set
+    if ($global:PartnerId -eq $null){
+        Set-SOPHOSPartnerTenant
+    }
+
+	# SOPHOS Customer Tenant API URI:
+	$TenantAPIURI = $global:PartnerApiHost
+	
+    # SOPHOS Customer Tenant API Headers:
+    $TentantAPIHeaders = @{
+        "Authorization" = "Bearer $global:Token";
+        "X-Tenant-ID" = "$global:PartnerId";
+    }
+	
+    # Set TLS Version
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+	# Post Request to SOPHOS for Endpoint API:
+	$TenantEndpointResult = (Invoke-RestMethod -Method Get -Uri $TenantAPIURI"/endpoint/v1/endpoints" -Headers $TentantAPIHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
+    
+    # All results for debugging
+    #Write-Host($TenantEndpointResult.items | Out-GridView)
+
+    # Build the query, Output of Assigned Products needs cleaning, just getting some data out for V1
+    $TenantEndpoints = $TenantEndpointResult.items | 
+    ? { (!$ComputerType) -or ($_.type -eq $ComputerType)} |  
+    ? { (!$HostName) -or ($_.hostname -match $HostName)} |
+    ? { (!$Health) -or ($_.Health.overall -eq $Health)} |
+    ? { (!$User) -or ($_.associatedPerson.viaLogin -match $user)} | 
+    Select -Property type, hostname, {$_.health.overall}, {$_.health.threats.status}, {$_.health.services.status}, 
+    {$_.os.platform}, {$_.os.name}, {$_.associatedPerson.viaLogin}, {$_.assignedProducts.code}, {$_.assignedProducts.version}, id |
+    ConvertTo-Json
+     
+    if ($TenantEndpoints){
+        Write-Host($TenantEndpoints)
+    }
+
+}
+
+
+# Set Endpoint to start working with
+function Set-SOPHOSPartnerEndpoint{
+
+    # Before the function runs check the token expiry and regenerate if needed
+    Get-SOPHOSTokenExpiry
+
+    # Check to See if tenant is set
+    if ($global:PartnerId -eq $null){
+        Set-SOPHOSPartnerTenant
+    }
+
+	# SOPHOS Customer Tenant API URI:
+	$TenantAPIURI = $global:PartnerApiHost
+	
+    # SOPHOS Customer Tenant API Headers:
+    $TentantAPIHeaders = @{
+        "Authorization" = "Bearer $global:Token";
+        "X-Tenant-ID" = "$global:PartnerId";
+    }
+	
+    # Set TLS Version
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+	# Post Request to SOPHOS for Endpoint API:
+	$TenantEndpointResult = (Invoke-RestMethod -Method Get -Uri $TenantAPIURI"/endpoint/v1/endpoints" -Headers $TentantAPIHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
+    
+    # All results for debugging
+    #Write-Host($TenantEndpointResult.items | Out-GridView)
+
+    # Build the query, Output of Assigned Products needs cleaning, just getting some data out for V1
+    $TenantEndpoints = $TenantEndpointResult.items | 
+    Select -Property type, hostname, id, {$_.health.overall}, {$_.health.threats.status}, {$_.health.services.status}, 
+    {$_.os.platform}, {$_.os.name}, {$_.associatedPerson.viaLogin}, {$_.assignedProducts.code}, {$_.assignedProducts.version}
+
+    $SelectedEndpoint = $TenantEndpoints | Out-GridView -PassThru
+
+    # We need the Token, TennantID and APIHost
+    $global:EndpointId = $SelectedEndpoint.id
+    $global:EndpointName = $SelectedEndpoint.hostname
+    Write-Host("$global:EndpointName has been selected for tenant $global:PartnerName")
+}
+
 
 
 function Export-SOPHOSPartnerEndpoints{

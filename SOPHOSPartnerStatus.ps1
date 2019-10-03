@@ -1,30 +1,31 @@
 <#
     Author: Ben Verschaeren
-    Description: Manage Parnter Alerts
+    Description: View Endpoint Status
 #>
 
 
 function Get-SOPHOSPartnerAllEndpoints{
     #Runs function in SOPOSPartnerEndpoints.ps1
-    Get-SOPHOSPartnerEndpoints
+    Get-SOPHOSPartnerEndpointsAllTenants
 }
 
 
 function Get-SOPHOSPartnerRedStatus{
     #Runs function in SOPOSPartnerEndpoints.ps1
-    Get-SOPHOSPartnerEndpoints -OverallHealth bad
+    Get-SOPHOSPartnerEndpointsAllTenants -OverallHealth bad
 
 }
 
 
 function Get-SOPHOSPartnerWarnedStatus{
     #Runs function in SOPOSPartnerEndpoints.ps1
-    Get-SOPHOSPartnerEndpoints -OverallHealth suspicious
+    Get-SOPHOSPartnerEndpointsAllTenants -OverallHealth suspicious
 
 }
 
 function Get-SOPHOSPartnerHealthyStatus{
     #Runs function in SOPOSPartnerEndpoints.ps1
-    Get-SOPHOSPartnerEndpoints -OverallHealth good
+    Get-SOPHOSPartnerEndpointsAllTenants -OverallHealth good
 
 }
+
