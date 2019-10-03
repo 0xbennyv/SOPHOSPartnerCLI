@@ -22,7 +22,7 @@ Export-SOPHOSPartnerTenant is designed to do a verbose dump of the partners tena
 ### New-SOPHOSPartnerTenant
 New-SOPHOSPartnerTenant is for programatically addressing the function for additional services. As an engineer if there was a workflow that needed to be created for a batch job or some sort of processing to automatically create a new tenant. The Active Switch sets the tenant to the active tenant for the session
 
-```Usage: Create-SOPHOSPartnerTenant -Active -CustomerName[Mandatory] -dataGeography[Mandatory] -FistName[Mandatory] -LastName[Mandatory] -Phone[Mandatory] -Mobile[Mandatory] -Address1[Mandatory] -Address2[Optional] -Address3[Optional] -City[Mandatory] -State[Mandatory] -CountryCode[Mandatory] -PostCode[Mandatory]```
+```Usage: New-SOPHOSPartnerTenant -Active -CustomerName[Mandatory] -dataGeography[Mandatory] -FistName[Mandatory] -LastName[Mandatory] -Phone[Mandatory] -Mobile[Mandatory] -Address1[Mandatory] -Address2[Optional] -Address3[Optional] -City[Mandatory] -State[Mandatory] -CountryCode[Mandatory] -PostCode[Mandatory]```
 
 
 ### Get-SOPHOSTenantTemplate
