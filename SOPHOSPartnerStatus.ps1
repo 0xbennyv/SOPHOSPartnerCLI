@@ -29,3 +29,15 @@ function Get-SOPHOSPartnerHealthyStatus{
 
 }
 
+
+function Get-SOPHOSPartnerTamperDisabled{
+    #Runs function in SOPOSPartnerEndpoints.ps1
+    Get-SOPHOSPartnerEndpointsAllTenants -TamperProtection false
+
+}
+
+
+function Get-SOPHOSPartnerTamperEnabled{
+    #Runs function in SOPOSPartnerEndpoints.ps1
+    Get-SOPHOSPartnerEndpointsAllTenants -TamperProtection true
+}

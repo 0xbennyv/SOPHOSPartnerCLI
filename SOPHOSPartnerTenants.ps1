@@ -73,7 +73,7 @@ function Get-SOPHOSPartnerTenants{
         $AllPartnerTenantResults += (Invoke-RestMethod -Method Get -Uri $PartnerTenantURI -Headers $PartnerTenantHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
     }
 
-    $global:PartnerTenants = $AllPartnerTenantResults | Select -Property id, apihost, name
+    $global:PartnerTenants = $AllPartnerTenantResults.items | Select -Property id, name, apiHost
 
 }
 

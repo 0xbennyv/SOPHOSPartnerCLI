@@ -10,7 +10,9 @@ function Get-SOPHOSPartnerEndpointsAllTenants{
         [string]$OverallHealth = $null,
         [string]$HostName = $null,
         [ValidateSet(“JSON”,”CSV”)]
-        [string]$Export = "JSON"
+        [string]$Export = "JSON",
+        [ValidateSet(“true”,”false”)]
+        [string]$TamperProtection = $null
     )
 
     # Before the function runs check the token expiry and regenerate if needed
@@ -34,23 +36,22 @@ function Get-SOPHOSPartnerEndpointsAllTenants{
             "Authorization" = "Bearer $global:Token";
             "X-Tenant-ID" = "$tenantid";
         }
-
-	    # Post Request to SOPHOS for Endpoint API:
-	    $TenantEndpointResult = (Invoke-RestMethod -Method Get -Uri $apiHost"/endpoint/v1/endpoints" -Headers $TentantAPIHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
-    
+        if ($apihost -ne $null){
+	        # Post Request to SOPHOS for Endpoint API:
+	        $AllTenantEndpointResult = (Invoke-RestMethod -Method Get -Uri $apiHost"/endpoint/v1/endpoints" -Headers $TentantAPIHeaders -ErrorAction SilentlyContinue -ErrorVariable Error)
+        }
         # All results for debugging
         # Write-Host($TenantEndpointResult.items | Out-GridView)
 
         # Build the query, Output of Assigned Products needs cleaning
-        $TenantEndpoints = $TenantEndpointResult.items | 
+        $AllTenantEndpoints = $AllTenantEndpointResult.items | 
         ? { (!$HostName) -or ($_.hostname -match $HostName)} |
         ? { (!$OverallHealth) -or ($_.Health.overall -eq $OverallHealth)} |
-        Select -Property type, hostname, {$_.health.overall}, {$_.health.threats.status}, {$_.health.services.status}, 
-        {$_.os.platform}, {$_.os.name}, {$_.associatedPerson.viaLogin}, {$_.assignedProducts} |
+        ? { (!$TamperProtection) -or ($_.tamperProtectionEnabled -match "$TamperProtection")} |
         ConvertTo-Json
 
-        if ($TenantEndpoints){
-            Write-Host($TenantEndpoints)
+        if ($AllTenantEndpoints){
+            Write-Host($AllTenantEndpoints)
         }
     }
 }
@@ -168,7 +169,12 @@ function Export-SOPHOSPartnerEndpoints{
     # Before the function runs check the token expiry and regenerate if needed
     Get-SOPHOSTokenExpiry
 
-	# SOPHOS Customer Tenant API URI:
+    # Check to See if tenant is set
+    if ($global:PartnerId -eq $null){
+        Set-SOPHOSPartnerTenant
+    }
+	
+    # SOPHOS Customer Tenant API URI:
 	$TenantAPIURI = $global:PartnerApiHost
 	
     # SOPHOS Customer Tenant API Headers:
@@ -216,7 +222,7 @@ function Export-SOPHOSPartnerEndpoints{
     }else{
 
         $TenantEndpoints | Export-Csv -Path $FileName -NoTypeInformation
-        Write-host "Tenant list exported as CSV to: $FileName"
+        Write-host "Endpoint list exported as CSV to: $FileName"
     }
 
 }
