@@ -1,3 +1,5 @@
+# This repository is unmaintained and is remaining public to serve as a sample/reference for any other developers.
+
 # SOPHOSPartnerCLI
 This is a SOPHOS Central PowerShell Module for SOPHOS Partners. It's still pretty beta and raw and looking for collaboration/contribution.
 
